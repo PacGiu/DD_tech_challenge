@@ -1,0 +1,10 @@
+{
+    "operational_db" : {
+        "conn_type": "postgres",
+        "login": "admin",
+        "password": "admin",
+        "host": "operational-db",
+        "port": 5432,
+        "schema": "companydata"
+    }
+}
