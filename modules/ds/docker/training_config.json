@@ -1,0 +1,8 @@
+{
+    "feature_map_filepath" : "./models/feature_map.json",
+    "output_filepath" : "./models/model.joblib",
+    "test_ratio" : 0.1,
+    "label_col" : "label",
+    "feature_cols" : ["attr_a", "attr_b", "scd_a", "scd_b"],
+    "feature_store_table": "feature_store"
+}

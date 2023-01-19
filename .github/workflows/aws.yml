@@ -1,0 +1,55 @@
+name: Deploy to Amazon EC2
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: pgdev
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Login to Amazon EC2
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Git clone the repository
+      uses: actions/checkout@v3
+      
+    - name: Deploy to Server 1
+      uses: easingthemes/ssh-deploy@main
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        REMOTE_HOST: ${{ secrets.EC2_IP }}
+        REMOTE_USER: ubuntu
+        TARGET: "./code/"
+        SCRIPT_AFTER: |
+          cd code &&\
+          #sudo apt purge python3-setuptools -y &&\
+          export DEB_PYTHON_INSTALL_LAYOUT=deb_system &&\
+          sudo apt install python3-pip -y &&\
+          pip install setuptools --upgrade &&\
+          pip install modules/mle/mle_package &&\
+          pip install modules/ds/docker/ds_package &&\
+          pip install Flask &&\
+          sudo apt update &&\
+          sudo apt install nginx &&\
+          sudo apt install gunicorn3 -y &&\
+          sudo service nginx reload &&\
+          gunicorn3 --chdir modules/deployment/flask_app app:app --daemon
